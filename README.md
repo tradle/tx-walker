@@ -2,8 +2,9 @@
 
     var Walker = require('tx-walker')
     var walker = new Walker({
-      batchSize: 20, // optional
-      throttle: 1000 // optional
+      networkName: 'bitcoin',   // optional, defaults to 'bitcoin'
+      batchSize: 20,            // optional, defaults to 20
+      throttle: 2000            // optional, defaults to 2000
     })
 
     var numBlocks = 0
