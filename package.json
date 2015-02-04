@@ -1,0 +1,32 @@
+{
+  "name": "tx-cursor",
+  "version": "0.0.1",
+  "description": "for easier bitcoin block/tx consumption",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tradle/tx-cursor"
+  },
+  "keywords": [
+    "bitcoin"
+  ],
+  "author": "Mark Vayngrib <mark.vayngrib@lablz.com> (http://github.com/mvayngrib)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tradle/tx-walker/issues"
+  },
+  "homepage": "https://github.com/tradle/tx-walker",
+  "dependencies": {
+    "bitcoinjs-lib": "^1.4.3",
+    "cb-blockr": "^3.0.2"
+  },
+  "devDependencies": {
+    "tape": "^3.5.0"
+  }
+}
