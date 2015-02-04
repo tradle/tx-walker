@@ -1,5 +1,5 @@
 {
-  "name": "tx-cursor",
+  "name": "tx-walker",
   "version": "0.0.1",
   "description": "for easier bitcoin block/tx consumption",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tradle/tx-cursor"
+    "url": "https://github.com/tradle/tx-walker"
   },
   "keywords": [
     "bitcoin"
