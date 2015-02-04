@@ -15,7 +15,7 @@ var inherits = require('util').inherits
  *  options.throttle    {Number} (optional, default: 2000)
  *    how many milliseconds to wait between requests
  */
-function Transactionwalker(options) {
+function TransactionWalker(options) {
   EventEmitter.call(this)
 
   options = options || {}
@@ -26,9 +26,9 @@ function Transactionwalker(options) {
   this._running = false
 }
 
-inherits(Transactionwalker, EventEmitter)
+inherits(TransactionWalker, EventEmitter)
 
-Transactionwalker.prototype.start = function(height) {
+TransactionWalker.prototype.start = function(height) {
   var self = this
   if (this._stopped) throw new Error('I\'m dead, create a new instance')
 
@@ -45,7 +45,7 @@ Transactionwalker.prototype.start = function(height) {
   })()
 }
 
-Transactionwalker.prototype._processNextBatch = function(cb) {
+TransactionWalker.prototype._processNextBatch = function(cb) {
   var self = this
   var heights = []
   for (var i = 1; i <= this._batchSize; i++) {
@@ -67,7 +67,7 @@ Transactionwalker.prototype._processNextBatch = function(cb) {
   })
 }
 
-Transactionwalker.prototype._readBlock = function(block) {
+TransactionWalker.prototype._readBlock = function(block) {
   block = bitcoin.Block.fromHex(block)
 
   this.emit('blockstart', block)
@@ -84,10 +84,10 @@ Transactionwalker.prototype._readBlock = function(block) {
   return true
 }
 
-Transactionwalker.prototype.stop = function() {
+TransactionWalker.prototype.stop = function() {
   this._stopped = true
   this._running = false
   this.emit('close');
 }
 
-module.exports = Transactionwalker
+module.exports = TransactionWalker
