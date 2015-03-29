@@ -16,6 +16,8 @@ var inherits = require('util').inherits
  *    how many milliseconds to wait between requests
  */
 function TransactionWalker(options) {
+  var self = this
+
   EventEmitter.call(this)
 
   options = options || {}
@@ -24,6 +26,8 @@ function TransactionWalker(options) {
   this._batchSize = options.batchSize || 20
   this._throttle = options.throttle || 2000
   this._running = false
+
+  this.on('tx', this._onTx)
 }
 
 inherits(TransactionWalker, EventEmitter)
@@ -68,10 +72,12 @@ TransactionWalker.prototype._processNextBatch = function(cb) {
 }
 
 TransactionWalker.prototype._readBlock = function(block) {
+  if (!block) return this.stop()
+
   block = bitcoin.Block.fromHex(block)
 
-  this.emit('blockstart', block)
-  this.emit('block', block)
+  this.emit('blockstart', block, this._height)
+  this.emit('block', block, this._height)
 
   var txs = block.transactions
 
@@ -80,14 +86,24 @@ TransactionWalker.prototype._readBlock = function(block) {
     if (!this._running) return
   }
   
-  this.emit('blockend', block)
+  this.emit('blockend', block, this._height)
   return true
+}
+
+TransactionWalker.prototype._onTx = function(tx) {
+  if (!this.listeners('OP_RETURN').length) return
+
+  for (var i = 0; i < tx.outs.length; i++) {
+    var out = tx.outs[i];
+    if (bitcoin.scripts.isNullDataOutput(out.script))
+      this.emit('OP_RETURN', tx, out.script.chunks[1]);
+  }
 }
 
 TransactionWalker.prototype.stop = function() {
   this._stopped = true
   this._running = false
-  this.emit('close');
+  this.emit('stop');
 }
 
 module.exports = TransactionWalker
