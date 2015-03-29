@@ -1,6 +1,6 @@
 {
   "name": "tx-walker",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "for easier bitcoin block/tx consumption",
   "main": "index.js",
   "directories": {
