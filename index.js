@@ -9,7 +9,7 @@ var inherits = require('util').inherits
 
 /**
  *  options             {object} (optional)
- *  options.networkName {String} (optional, default: 'bitcoin') 
+ *  options.networkName {String} (optional, default: 'bitcoin')
  *  options.batchSize   {Number} (optional, default: 20)
  *    how many blocks to ask for in a request to whatever the provider is
  *  options.throttle    {Number} (optional, default: 2000)
@@ -34,9 +34,13 @@ inherits(TransactionWalker, EventEmitter)
 
 TransactionWalker.prototype.start = function(height) {
   var self = this
+
   if (this._stopped) throw new Error('I\'m dead, create a new instance')
 
-  assert(typeof height === 'number', 'Height is required')
+  if (typeof height === 'undefined') height = this._fromHeight;
+  else this.from(height);
+
+  assert(typeof height === 'number', 'Starting height is required')
   this._height = height - 1
 
   if (this._running) return
@@ -85,8 +89,10 @@ TransactionWalker.prototype._readBlock = function(block) {
     this.emit('tx', txs[i])
     if (!this._running) return
   }
-  
+
   this.emit('blockend', block, this._height)
+  if (this._height === this._toHeight) return this.stop();
+
   return true
 }
 
@@ -98,6 +104,16 @@ TransactionWalker.prototype._onTx = function(tx) {
     if (bitcoin.scripts.isNullDataOutput(out.script))
       this.emit('OP_RETURN', tx, out.script.chunks[1]);
   }
+}
+
+TransactionWalker.prototype.from = function(height) {
+  this._fromHeight = height;
+  return this;
+}
+
+TransactionWalker.prototype.to = function(height) {
+  this._toHeight = height;
+  return this;
 }
 
 TransactionWalker.prototype.stop = function() {
