@@ -51,6 +51,8 @@ TransactionWalker.prototype.start = function(height) {
 
     self._processNextBatch(loop)
   })()
+
+  return this;
 }
 
 TransactionWalker.prototype._processNextBatch = function(cb) {
@@ -120,6 +122,7 @@ TransactionWalker.prototype.stop = function() {
   this._stopped = true
   this._running = false
   this.emit('stop');
+  return this;
 }
 
 module.exports = TransactionWalker
