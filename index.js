@@ -22,7 +22,7 @@ function TransactionWalker(options) {
 
   options = options || {}
   this._networkName = options.networkName || 'bitcoin'
-  this._blockchain = new Blockchain(this._networkName)
+  this._blockchain = options.api || new Blockchain(this._networkName)
   this._batchSize = options.batchSize || 20
   this._throttle = options.throttle || 2000
   this._running = false
@@ -58,9 +58,16 @@ TransactionWalker.prototype.start = function(height) {
 TransactionWalker.prototype._processNextBatch = function(cb) {
   var self = this
   var heights = []
-  for (var i = 1; i <= this._batchSize; i++) {
+  var batchSize = this._batchSize
+  if ('_toHeight' in this) {
+    batchSize = Math.min(batchSize, this._toHeight - this._height)
+  }
+
+  for (var i = 1; i <= batchSize; i++) {
     heights.push(this._height + i)
   }
+
+  if (!heights.length) return this.stop()
 
   this._blockchain.blocks.get(heights, function(err, blocks) {
     if (err) {
@@ -93,8 +100,6 @@ TransactionWalker.prototype._readBlock = function(block) {
   }
 
   this.emit('blockend', block, this._height)
-  if (this._height === this._toHeight) return this.stop();
-
   return true
 }
 
