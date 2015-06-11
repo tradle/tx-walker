@@ -87,7 +87,8 @@ TransactionWalker.prototype._processNextBatch = function(cb) {
 TransactionWalker.prototype._readBlock = function(block) {
   if (!block) return this.stop()
 
-  block = bitcoin.Block.fromHex(block)
+  if (typeof block === 'string') block = bitcoin.Block.fromHex(block)
+  else if (Buffer.isBuffer(block)) block = bitcoin.Block.fromBuffer(block)
 
   this.emit('blockstart', block, this._height)
   this.emit('block', block, this._height)
