@@ -1,106 +1,68 @@
-var walkerFixtures = require('./fixtures')
+
 var test = require('tape')
-var Walker = require('../')
+var through2 = require('through2')
+var Fakechain = require('blockloader/fakechain')
+var streams = require('../').streams
+var blockstream = streams.blocks
+var txstream = streams.txs
+var datatxstream = streams.dataTxs
+var datastream = streams.data
+var walkerFixtures = require('./fixtures')
+var blockFixtures = walkerFixtures.blocks
+var txFixtures = walkerFixtures.txs
+var dataFixtures = walkerFixtures.data
+var fakechain = new Fakechain({
+  networkName: 'testnet'
+})
 
-test('loads blocks and txs', function(t) {
-  t.plan(walkerFixtures.blocks.length + walkerFixtures.txs.length + 1);
+var startBlockHeight = 100000
+blockFixtures.forEach(function (b, i) {
+  fakechain.addBlock(b, startBlockHeight + i)
+})
 
-  var walker = new Walker({
+function getFakeStream (streamer) {
+  var stream = streamer({
+    api: fakechain,
+    networkName: 'testnet',
     batchSize: 5,
     throttle: 2000
-  });
-
-  var txIdx = 0;
-  var blockIdx = 0;
-  var startBlockHeight = 100000;
-  var i = 0;
-  var j = 0;
-  walker.on('block', verifyBlock);
-  walker.on('blockend', function() {
-    if (i === 10) {
-      walker.stop()
-
-      // can't start once stopped
-      t.throws(walker.start.bind(walker), /dead/, 'can\'t restart once stopped')
-    }
   })
 
-  walker.on('tx', verifyTx);
-  walker.start(startBlockHeight);
-
-  function verifyBlock(block) {
-    t.equal(block.toHex(), walkerFixtures.blocks[i++]);
+  for (var i = 0; i < blockFixtures.length; i++) {
+    stream.write(startBlockHeight + i)
   }
 
-  function verifyTx(tx) {
-    t.equal(tx.toHex(), walkerFixtures.txs[j++]);
-  }
+  stream.end()
+  return stream
+}
+
+test('streams blocks', function(t) {
+  t.plan(blockFixtures.length);
+
+  var blockIdx = 0
+  getFakeStream(blockstream)
+    .pipe(through2.obj(function (block, enc, done) {
+      t.equal(block.toHex(), walkerFixtures.blocks[blockIdx++]);
+      done()
+    }))
 });
 
-test('scan blockchain for public data', function(t) {
-  var from = 321997;
-  var to = 322003;
-
-  t.plan(3 + (to - from + 1) * 2);
-
-  var fileKeys = [
-    '8e2b8d39cf77de22a028e26769003b29a43348ac',
-    'f89ad154207d45ef031601fe50b270ca27a811f3'
-  ];
-
-  var fileKeysSeen = [];
-
-  new Walker({
-      networkName: 'testnet',
-      batchSize: 5,
-      throttle: 2000
-    })
-    .from(from)
-    .to(to)
-    .on('blockstart', t.pass)
-    .on('blockend', t.pass)
-    .on('stop', t.pass)
-    .on('OP_RETURN', function(tx, buf) {
-      if (!buf || fileKeysSeen.length === fileKeys.length) return;
-
-      if (buf.slice(0, 6).toString() === 'tradle') {
-        // cut off "tradle" + 1 byte
-        var data = buf.slice(7).toString('hex');
-        t.notEqual(fileKeys.indexOf(data), -1);
-        fileKeysSeen.push(fileKeysSeen);
-      }
-    })
-    .start()
+test('streams txs', function(t) {
+  t.plan(txFixtures.length);
+  var txIdx = 0
+  getFakeStream(txstream)
+    .pipe(through2.obj(function (tx, enc, done) {
+      t.equal(tx.toHex(), txFixtures[txIdx++]);
+      done()
+    }))
 });
 
-// test('start / stop / start / stop', function(t) {
-//   t.plan(walkerFixtures.blocks.length + walkerFixtures.txs.length)
-
-//   var walker = new Walker({
-//     batchSize: 5,
-//     throttle: 2000
-//   })
-
-//   var startBlockHeight = 100005
-//   var i = 0
-//   var j = 0
-//   walker.on('block', verifyBlock)
-//   walker.on('blockend', function() {
-//     if (i >= 10) walker.stop()
-//   })
-
-//   walker.on('tx', saveTx);
-//   walker.start(startBlockHeight);
-
-//   function verifyBlock(block) {
-//     t.equal(block.toHex(), walkerFixtures.blocks[i++])
-//   }
-
-//   function saveTx(tx) {
-//     t.equal(tx.toHex(), walkerFixtures.txs[j++])
-//     walker.stop()
-//     setTimeout(function() {
-//       walker.start()
-//     }, 100)
-//   }
-// });
+test('streams data txs', function(t) {
+  t.plan(dataFixtures.length);
+  var dataIdx = 0
+  getFakeStream(datastream)
+    .pipe(through2.obj(function (data, enc, done) {
+      t.equal(data.toString('hex'), dataFixtures[dataIdx++]);
+      done()
+    }))
+});

@@ -24,9 +24,12 @@
   "homepage": "https://github.com/tradle/tx-walker",
   "dependencies": {
     "bitcoinjs-lib": "^1.4.3",
-    "cb-blockr": "^3.0.2"
+    "cb-blockr": "^3.0.2",
+    "stream-combiner2": "^1.0.2",
+    "through2": "^2.0.0"
   },
   "devDependencies": {
+    "blockloader": "git://github.com/mvayngrib/blockloader",
     "tape": "^3.5.0"
   }
 }
