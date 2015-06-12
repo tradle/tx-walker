@@ -41,8 +41,8 @@ test('streams blocks', function(t) {
 
   var blockIdx = 0
   getFakeStream(blockstream)
-    .pipe(through2.obj(function (block, enc, done) {
-      t.equal(block.toHex(), walkerFixtures.blocks[blockIdx++]);
+    .pipe(through2.obj(function (blockInfo, enc, done) {
+      t.equal(blockInfo.block.toHex(), walkerFixtures.blocks[blockIdx++]);
       done()
     }))
 });
@@ -51,8 +51,8 @@ test('streams txs', function(t) {
   t.plan(txFixtures.length);
   var txIdx = 0
   getFakeStream(txstream)
-    .pipe(through2.obj(function (tx, enc, done) {
-      t.equal(tx.toHex(), txFixtures[txIdx++]);
+    .pipe(through2.obj(function (txInfo, enc, done) {
+      t.equal(txInfo.tx.toHex(), txFixtures[txIdx++]);
       done()
     }))
 });
@@ -61,8 +61,8 @@ test('streams data txs', function(t) {
   t.plan(dataFixtures.length);
   var dataIdx = 0
   getFakeStream(datastream)
-    .pipe(through2.obj(function (data, enc, done) {
-      t.equal(data.toString('hex'), dataFixtures[dataIdx++]);
+    .pipe(through2.obj(function (dataInfo, enc, done) {
+      t.equal(dataInfo.data.toString('hex'), dataFixtures[dataIdx++]);
       done()
     }))
 });
