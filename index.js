@@ -77,7 +77,7 @@ TransactionWalker.prototype._processNextBatch = function(cb) {
 
     blocks.every(function(block, i) {
       self._height = heights[i]
-      return self._readBlock(block)
+      return self._readBlock(block.blockHex || block)
     })
 
     setTimeout(cb, self._throttle)
