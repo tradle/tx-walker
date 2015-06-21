@@ -1,6 +1,8 @@
+
 var blockstream = require('./lib/blockstream')
 var toTxs = require('./lib/toTxs')
 var dataTxsOnly = require('./lib/dataTxsOnly')
+var txsForAddresses = require('./lib/txsForAddresses')
 var getData = require('./lib/getData')
 var combine = require('stream-combiner2')
 
@@ -26,10 +28,17 @@ function datastream (options) {
 }
 
 module.exports = {
-  streams: {
+  stream: {
     blocks: blockstream,
     txs: txstream,
+    txsForAddresses: txsForAddresses,
     dataTxs: datatxstream,
     data: datastream
+  },
+  filter: {
+    data: dataTxsOnly
+  },
+  map: {
+    data: getData
   }
 }
