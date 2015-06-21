@@ -2,6 +2,7 @@
 var test = require('tape')
 var through2 = require('through2')
 var bitcoin = require('bitcoinjs-lib')
+var uniq = require('uniq')
 var Fakechain = require('blockloader/fakechain')
 var streams = require('../').stream
 var blockstream = streams.blocks
@@ -86,7 +87,7 @@ test('streams txs for addresses', function(t) {
       addresses: Object.keys(txAddrFixtures)
     })
     .pipe(through2.obj(function (txInfo, enc, done) {
-      getOutputAddresses(txInfo.tx).forEach(function (addr) {
+      getAddresses(txInfo.tx).forEach(function (addr) {
         if (txs[addr]) {
           txs[addr].push(txInfo.tx.getId())
         }
@@ -112,4 +113,23 @@ function getOutputAddresses (tx) {
 
     return addrs
   }, [])
+}
+
+function getInputAddresses (tx) {
+  return tx.ins.reduce(function (addrs, input) {
+    if (bitcoin.scripts.classifyInput(input.script) === 'pubkeyhash') {
+      var network = bitcoin.networks[networkName];
+      var addr = bitcoin.ECPubKey.fromBuffer(input.script.chunks[1])
+        .getAddress(network)
+        .toString();
+
+      addrs.push(addr)
+    }
+
+    return addrs
+  }, [])
+}
+
+function getAddresses (tx) {
+  return uniq(getOutputAddresses(tx).concat(getInputAddresses(tx)))
 }
